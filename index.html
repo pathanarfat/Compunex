@@ -10,22 +10,63 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-  :root { --primary: #4CAF50; --bg: #f2f2f2; --danger: #e74c3c; --text-muted: #7f8c8d; }
-  body { font-family: sans-serif; background: var(--bg); margin:0; padding:10px; }
+  :root { 
+    --primary: #4CAF50; 
+    --bg: #f2f2f2; 
+    --app-gradient: linear-gradient(180deg, #e3f2fd 0%, #ffffff 100%);
+    --danger: #e74c3c; 
+    --text-muted: #7f8c8d; 
+  }
+  
+  body { 
+    font-family: sans-serif; 
+    background: var(--app-gradient); 
+    background-attachment: fixed;
+    margin:0; 
+    padding:10px; 
+    min-height: 100vh;
+  }
   
   #pinOverlay {
-    position: fixed; top:0; left:0; width:100%; height:100%; background: white;
+    position: fixed; top:0; left:0; width:100%; height:100%; 
+    background: var(--app-gradient);
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     z-index: 10000;
   }
+
+  .pin-input-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: 280px; 
+    margin-bottom: 20px;
+    position: relative;
+  }
   
-  /* Rephrased PIN message style */
-  #pinHelp { 
-    color: var(--text-muted); font-size: 0.85em; margin-bottom: 20px; text-align: center;
-    background: #f8f9fa; padding: 8px 15px; border-radius: 20px; border: 1px solid #eee;
+  #pinInput {
+    width: 200px; 
+    text-align: center;
+    margin-top: 0; 
   }
 
-  /* Professional Developer Info Styling */
+  .info-btn {
+    background: #e1f5fe;
+    color: #0288d1;
+    border: 1px solid #b3e5fc;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    display: none; 
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    right: 0; 
+  }
+
   .dev-footer {
     margin-top: 40px; text-align: center; border-top: 1px solid #eee; padding-top: 15px; width: 250px;
   }
@@ -33,7 +74,6 @@
   .dev-footer .label { color: var(--text-muted); font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
   .dev-footer a { color: var(--primary); text-decoration: none; font-weight: bold; }
 
-  /* Modal System */
   .modal-overlay {
     display: none; position: fixed; top:0; left:0; width:100%; height:100%;
     background: rgba(0,0,0,0.5); z-index: 20000; justify-content: center; align-items: center;
@@ -45,14 +85,38 @@
     background:#fff; padding:15px; margin-bottom:10px;
     border-radius:12px; box-shadow:0 2px 5px rgba(0,0,0,0.1);
   }
-  .account-bar { display: flex; gap: 10px; margin-bottom: 10px; }
+
+  .account-bar { 
+    display: flex; 
+    gap: 10px; 
+    margin-bottom: 10px; 
+    background: #fff;
+    padding: 5px;
+    border-radius: 12px;
+    align-items: center;
+  }
+  
+  #accountSelect {
+    flex: 1;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 14px;
+    padding: 12px 35px 12px 15px;
+    margin-top: 0;
+    border: 1px solid #ddd;
+    font-weight: 600;
+    color: #333;
+    background-color: #fafafa;
+  }
+
   input, select, button {
     width:100%; padding:14px; margin-top:8px; font-size:16px;
     border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box;
   }
   button { background: var(--primary); color:white; border:none; font-weight: bold; cursor: pointer; }
   
-  /* Outlined Button Style */
   .btn-outline-primary { 
     background: transparent; color: var(--primary); border: 2px solid var(--primary); 
   }
@@ -76,17 +140,26 @@
 
   .cat-tag { background: rgba(255,255,255,0.8); }
   .status-tag { color: var(--danger); border-color: var(--danger); margin-left: 8px; display: inline-block; }
-  .over-amt { font-size: 10px; color: var(--danger); font-weight: normal; margin-left: 4px; }
-
+  
   .expense-actions { display: flex; gap: 5px; margin-left: 5px; }
   .expense button { width: auto; padding: 6px 8px; margin: 0; background: #f8f8f8; color: #333; font-size: 12px; }
   .done .expense-text { text-decoration: line-through; color:#aaa; }
-  .done .cat-tag { opacity: 0.3 !important; border-color: #ccc !important; color: #ccc !important; }
   
   .collapsible-content { display: none; padding-top: 5px; }
   .collapsible-content.active { display: block; }
   .chart-container { position: relative; height: 220px; width: 100%; margin-bottom: 15px; }
-  .report-item { display: flex; justify-content: space-between; font-size: 13px; padding: 6px 0; border-bottom: 1px solid #f9f9f9; }
+  .report-item { display: flex; justify-content: space-between; font-size: 13px; padding: 8px 0; border-bottom: 1px solid #f9f9f9; }
+
+  /* Compact Overage Tags */
+  .overage-tag-container {
+    display: flex; flex-wrap: wrap; gap: 6px; margin-top: 15px; border-top: 1px solid #eee; padding-top: 12px;
+  }
+  .overage-rect {
+    flex: 1; min-width: 100px; padding: 6px 8px; border-radius: 6px; text-align: center;
+    background: #fff5f5; border: 1px solid #feb2b2; color: #c53030;
+  }
+  .overage-rect .overage-label { font-size: 9px; text-transform: uppercase; font-weight: bold; display: block; margin-bottom: 2px; }
+  .overage-rect .overage-val { font-size: 12px; font-weight: bold; }
 
   .btn-danger { background: var(--danger); margin-top: 10px; }
   .btn-outline { background: transparent; color: #777; border: 1px solid #ccc; margin-top: 10px; font-size: 14px; }
@@ -96,12 +169,14 @@
 <body>
 
 <div id="pinOverlay">
-  <h2 style="margin-bottom:20px;">🧾 Monthly Budget Planner</h2>
-  <div style="display:flex; align-items:center; gap:12px; margin-bottom:20px;">
-    <input type="password" id="pinInput" inputmode="numeric" placeholder="Enter PIN" style="width:200px; text-align:center;">
+  <h2 style="margin-bottom:25px;">🧾 Monthly Budget Planner</h2>
+  
+  <div class="pin-input-wrapper">
+    <input type="password" id="pinInput" inputmode="numeric" placeholder="Enter PIN">
+    <div id="infoBtn" class="info-btn" onclick="showPinInfo()">i</div>
   </div>
-  <p id="pinHelp">Default access key is <b>1234</b></p>
-  <button id="unlockBtn" class="btn-outline-primary" style="width:200px;">Let's Go!</button>
+  
+  <button id="unlockBtn" class="btn-outline-primary" style="width:200px; margin-top: 0;">Sign In</button>
   
   <div class="dev-footer">
     <p><span class="label">Developed by</span><br>Arfat Pathan</p>
@@ -110,10 +185,21 @@
   </div>
 </div>
 
+<div id="accountModal" class="modal-overlay">
+  <div class="modal-content">
+    <h3>Add New Account</h3>
+    <input type="text" id="newAccNameInput" placeholder="Enter account name">
+    <div style="display: flex; gap: 10px; margin-top: 10px;">
+      <button onclick="saveNewAccount()">Create</button>
+      <button onclick="closeModal('accountModal')" style="background: #ccc;">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <div id="sysModal" class="modal-overlay">
   <div class="modal-content">
     <h3 id="sysModalTitle">Notification</h3>
-    <p id="sysModalMsg" style="font-size: 14px; color: #444; margin-bottom: 20px;"></p>
+    <p id="sysModalMsg" style="font-size: 14px; color: #444; margin-bottom: 20px; white-space: pre-line;"></p>
     <div style="display: flex; gap: 10px;">
       <button id="sysModalBtnOk" style="margin-top:0;">OK</button>
       <button id="sysModalBtnCancel" style="margin-top:0; background: #ccc; display: none;">Cancel</button>
@@ -149,7 +235,7 @@
 <div id="mainContent">
   <div class="account-bar">
     <select id="accountSelect" onchange="switchAccount(this.value)"></select>
-    <button onclick="addNewAccount()" style="width:auto;">+ New</button>
+    <button onclick="openAccountModal()" style="width:auto; margin-top:0;">+ New</button>
   </div>
 
   <div class="card">
@@ -171,11 +257,9 @@
     <p>Budget: ₹<span id="incomeDisplay">0</span></p>
     <p>Total Planned: ₹<span id="totalPlannedDisplay">0</span> 
       <span id="overPlannedTag" class="status-tag" style="display:none">OVER PLANNED</span>
-      <span id="overPlannedAmt" class="over-amt"></span>
     </p>
     <p>Spent (Checked): ₹<span id="spentDisplay">0</span> 
       <span id="overSpentTag" class="status-tag" style="display:none">OVERSPENT</span>
-      <span id="overSpentAmt" class="over-amt"></span>
     </p>
     <p><b>Remaining: ₹<span id="remainingDisplay">0</span></b></p>
   </div>
@@ -198,6 +282,7 @@
         <canvas id="spendingChart"></canvas>
       </div>
       <div id="reportBreakdown"></div>
+      <div id="overageContainer" class="overage-tag-container"></div>
     </div>
   </div>
 
@@ -235,26 +320,35 @@ const CATEGORY_COLORS = {
 };
 
 const KEYWORDS = {
-  "🏠 Housing": ["rent", "maintenance", "electricity", "bill", "gas", "broker", "internet", "atm", "gas cylinder", "farhat", "water", "livpure", "ro", "phone", "phone recharge", "recharge"],
-  "🛒 Groceries": ["milk", "vegetable", "fruit", "grocery", "mart", "supermarket", "egg", "meat", "groceries", "dmart", "zepto", "blinkit", "ratandeep"],
+  "🏠 Housing": ["rent", "maintenance", "electricity", "bill", "gas", "broker", "internet", "atm", "gas cylinder", "water", "livpure", "ro", "phone", "recharge"],
+  "🛒 Groceries": ["milk", "vegetable", "fruit", "grocery", "mart", "supermarket", "egg", "meat", "dmart", "zepto", "blinkit", "ratandeep"],
   "🍽️ Dining Out / Online food": ["zomato", "swiggy", "restaurant", "hotel", "pizza", "burger", "cafe", "dinner", "lunch"],
-  "🚕 Transportation": ["uber", "ola", "auto", "metro", "bus", "train", "flight", "petrol", "diesel", "fuel", "petrol 1", "petrol 2", "riksha", "rapido"],
-  "🚗 Vehicle Maintenance": ["service", "tyre", "puncture", "repair", "insurance", "wash", "bike repair", "car repair", "denting"],
-  "🏥 Healthcare": ["doctor", "medicine", "pharmacy", "hospital", "clinic", "test", "farhat medical", "juhaina hospital", "aamena hospital", "farhat hospital", "medical"],
-  "📚 Education": ["fees", "school", "college", "book", "course", "tutor", "special education", "ot", "swimming", "occupational therepy"],
-  "👶 Childcare": ["diaper", "diapers", "nanny", "toy", "baby", "aptamil", "baby food"],
-  "🛍️ Shopping": ["amazon", "flipkart", "clothes", "cloths", "shoes", "mall", "electronics", "meesho"],
+  "🚕 Transportation": ["uber", "ola", "auto", "metro", "bus", "train", "flight", "petrol", "diesel", "fuel", "riksha", "rapido"],
+  "🚗 Vehicle Maintenance": ["service", "tyre", "puncture", "repair", "insurance", "wash", "bike repair", "car repair"],
+  "🏥 Healthcare": ["doctor", "medicine", "pharmacy", "hospital", "clinic", "medical"],
+  "📚 Education": ["fees", "school", "college", "book", "course", "tutor", "special education"],
+  "👶 Childcare": ["diaper", "nanny", "toy", "baby", "aptamil"],
+  "🛍️ Shopping": ["amazon", "flipkart", "clothes", "shoes", "mall", "electronics", "meesho"],
   "💰 Savings": ["emergency", "fd", "rd", "save", "saving"],
   "📈 Investments": ["stock", "mutual fund", "crypto", "sip", "gold"],
   "💳 Debt Payments": ["emi", "loan", "credit card", "interest"],
   "🧹 House Help": ["maid", "cook", "driver", "salary", "security", "kamwali"],
-  "🤝 Help and Donations": ["charity", "gift", "temple", "ngo", "zakaat", "zakat", "papa", "raju bhayya"]
+  "🤝 Help and Donations": ["charity", "gift", "temple", "ngo", "zakaat", "zakat"]
 };
 
 let editingExpenseId = null;
 let chartInstance = null;
 
-/* Universal Modal Call */
+function checkPinButton() {
+  const currentPin = localStorage.getItem("app_pin") || "1234";
+  const infoBtn = document.getElementById('infoBtn');
+  if (currentPin === "1234") {
+    infoBtn.style.display = 'flex';
+  } else {
+    infoBtn.style.display = 'none';
+  }
+}
+
 function showSysModal(title, msg, onOk, showCancel = false) {
   const m = document.getElementById('sysModal');
   document.getElementById('sysModalTitle').innerText = title;
@@ -270,6 +364,32 @@ function showSysModal(title, msg, onOk, showCancel = false) {
 
 function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
+function showPinInfo() {
+  showSysModal(
+    "Security Help", 
+    "Default access key is 1234.\n\nYou can change this PIN anytime in the App Settings after logging in."
+  );
+}
+
+function openAccountModal() {
+  document.getElementById('newAccNameInput').value = "";
+  document.getElementById('accountModal').style.display = 'flex';
+}
+
+function saveNewAccount() {
+  const name = document.getElementById('newAccNameInput').value.trim();
+  if (name && !appData.accounts[name]) {
+    const currentAcc = getActiveAcc();
+    const copiedExpenses = currentAcc.expenses.map(exp => ({...exp, done: false}));
+    appData.accounts[name] = { income: currentAcc.income, title: name, expenses: copiedExpenses, history: [] };
+    appData.currentAccount = name;
+    saveData(); updateAccountDropdown(); render();
+    closeModal('accountModal');
+  } else if (appData.accounts[name]) {
+    showSysModal("Error", "Account name already exists.");
+  }
+}
+
 function autoCategorize() {
     const input = document.getElementById('expName').value.toLowerCase();
     const select = document.getElementById('expCategory');
@@ -280,26 +400,9 @@ function autoCategorize() {
     select.value = matched;
 }
 
-function checkPinHelp() {
-  const savedPin = localStorage.getItem("app_pin");
-  if (savedPin && savedPin !== "1234") document.getElementById("pinHelp").style.display = "none";
-}
-
 function loadData() {
   const saved = localStorage.getItem("budget_pro_master");
-  if (saved) {
-      let parsed = JSON.parse(saved);
-      Object.keys(parsed.accounts).forEach(accName => {
-          parsed.accounts[accName].expenses.forEach(exp => {
-              if(exp.category === "Other") exp.category = "⚡ Other";
-              if(!CATEGORIES.includes(exp.category)) {
-                  let found = CATEGORIES.find(c => c.includes(exp.category.replace(/[^\w\s]/gi, '').trim()));
-                  if(found) exp.category = found;
-              }
-          });
-      });
-      appData = parsed;
-  }
+  if (saved) appData = JSON.parse(saved);
   populateDropdowns();
   updateAccountDropdown();
 }
@@ -326,17 +429,6 @@ window.switchAccount = function(name) {
   saveData(); render();
 };
 
-window.addNewAccount = function() {
-  const name = prompt("Enter new account name:");
-  if (name && !appData.accounts[name]) {
-    const currentAcc = getActiveAcc();
-    const copiedExpenses = currentAcc.expenses.map(exp => ({...exp, done: false}));
-    appData.accounts[name] = { income: currentAcc.income, title: name, expenses: copiedExpenses, history: [] };
-    appData.currentAccount = name;
-    saveData(); updateAccountDropdown(); render();
-  }
-};
-
 function render() {
   const acc = getActiveAcc();
   let spent = 0, totalPlanned = 0;
@@ -345,32 +437,10 @@ function render() {
     if (e.done) spent += Number(e.amount);
   });
 
-  const overPlannedTag = document.getElementById("overPlannedTag");
-  const overPlannedAmt = document.getElementById("overPlannedAmt");
-  if (totalPlanned > acc.income && acc.income > 0) {
-    overPlannedTag.style.display = "inline-block";
-    overPlannedAmt.innerText = `(By ₹${totalPlanned - acc.income})`;
-  } else {
-    overPlannedTag.style.display = "none";
-    overPlannedAmt.innerText = "";
-  }
+  document.getElementById("overPlannedTag").style.display = (totalPlanned > acc.income && acc.income > 0) ? "inline-block" : "none";
+  document.getElementById("overSpentTag").style.display = (spent > acc.income && acc.income > 0) ? "inline-block" : "none";
 
-  const overSpentTag = document.getElementById("overSpentTag");
-  const overSpentAmt = document.getElementById("overSpentAmt");
-  if (spent > acc.income && acc.income > 0) {
-    overSpentTag.style.display = "inline-block";
-    overSpentAmt.innerText = `(By ₹${spent - acc.income})`;
-  } else {
-    overSpentTag.style.display = "none";
-    overSpentAmt.innerText = "";
-  }
-
-  let html = `<div style="border-top: 1px solid #eee; margin-top: 5px; padding-top: 5px;">
-    <div style="display:flex; justify-content: space-between; margin-bottom: 10px;">
-        <span>Items: ${acc.expenses.length}</span>
-        <b>Total: ₹${totalPlanned}</b>
-    </div>`;
-  
+  let html = `<div>`;
   acc.expenses.sort((a,b) => (b.done - a.done)).forEach(e => {
     const color = CATEGORY_COLORS[e.category] || "#777";
     html += `
@@ -410,11 +480,15 @@ function updateChart() {
   const acc = getActiveAcc();
   const totals = {};
   let overallTotal = 0;
+  let spentTotal = 0;
+
   acc.expenses.forEach(e => {
     totals[e.category] = (totals[e.category] || 0) + Number(e.amount);
     overallTotal += Number(e.amount);
+    if (e.done) spentTotal += Number(e.amount);
   });
 
+  // Category Breakdown
   let breakdownHtml = "";
   const sortedCats = Object.keys(totals).sort((a,b) => totals[b] - totals[a]);
   sortedCats.forEach(cat => {
@@ -423,6 +497,33 @@ function updateChart() {
     breakdownHtml += `<div class="report-item"><span>${cat}</span><span>₹${amt} <b>(${pct}%)</b></span></div>`;
   });
   document.getElementById('reportBreakdown').innerHTML = breakdownHtml;
+
+  // Smaller Rectangular Overage Tags
+  let overageHtml = "";
+  if (acc.income > 0) {
+    if (overallTotal > acc.income) {
+      const diff = overallTotal - acc.income;
+      const pct = ((diff / acc.income) * 100).toFixed(1);
+      overageHtml += `
+        <div class="overage-rect">
+          <span class="overage-label">Over-Planned</span>
+          <span class="overage-val">₹${diff} (${pct}%)</span>
+        </div>`;
+    }
+    if (spentTotal > acc.income) {
+      const diff = spentTotal - acc.income;
+      const pct = ((diff / acc.income) * 100).toFixed(1);
+      overageHtml += `
+        <div class="overage-rect">
+          <span class="overage-label">Over-Spent</span>
+          <span class="overage-val">₹${diff} (${pct}%)</span>
+        </div>`;
+    }
+  }
+  
+  const container = document.getElementById('overageContainer');
+  container.innerHTML = overageHtml;
+  container.style.display = overageHtml === "" ? "none" : "flex";
 
   if (chartInstance) chartInstance.destroy();
   const canvas = document.getElementById('spendingChart');
@@ -475,19 +576,17 @@ window.saveNewPin = () => {
   const p = document.getElementById('newPinInput').value;
   if (p && p.length >= 4) { 
     localStorage.setItem("app_pin", p); 
-    checkPinHelp(); 
     showSysModal("Success", "Security PIN updated."); 
     closeModal('pinModal');
+    checkPinButton(); 
   } else {
     showSysModal("Input Error", "PIN must be at least 4 digits.");
   }
 };
 
 window.confirmDeleteAccount = () => {
-  if(Object.keys(appData.accounts).length <= 1) {
-    return showSysModal("Action Denied", "Cannot delete the only account.");
-  }
-  showSysModal("Confirm Delete", "Permanently remove this account and all its data?", () => {
+  if(Object.keys(appData.accounts).length <= 1) return showSysModal("Action Denied", "Cannot delete the only account.");
+  showSysModal("Confirm Delete", "Permanently remove this account?", () => {
     delete appData.accounts[appData.currentAccount];
     appData.currentAccount = Object.keys(appData.accounts)[0];
     saveData(); updateAccountDropdown(); render();
@@ -511,9 +610,7 @@ document.getElementById("pinInput").addEventListener("keypress", (e) => {
 
 document.getElementById("addExpBtn").onclick = () => {
   const n = document.getElementById("expName"), a = document.getElementById("expAmount"), c = document.getElementById("expCategory");
-  if(!n.value || !a.value) {
-    return showSysModal("Missing Info", "Please enter both name and amount.");
-  }
+  if(!n.value || !a.value) return showSysModal("Missing Info", "Please enter both name and amount.");
   getActiveAcc().expenses.push({id: Date.now(), name: n.value, amount: Number(a.value), category: c.value, done: false});
   n.value = ""; a.value = ""; saveData(); render();
 };
@@ -522,15 +619,12 @@ document.getElementById("saveHeaderBtn").onclick = () => {
   const newName = document.getElementById("budgetName").value.trim();
   const oldName = appData.currentAccount;
   if (newName && newName !== oldName) {
-      if (appData.accounts[newName]) {
-          return showSysModal("Error", "An account with this name already exists.");
-      }
+      if (appData.accounts[newName]) return showSysModal("Error", "Name already exists.");
       appData.accounts[newName] = appData.accounts[oldName];
       delete appData.accounts[oldName];
       appData.currentAccount = newName;
   }
-  const acc = getActiveAcc();
-  acc.income = Number(document.getElementById("incomeInput").value);
+  getActiveAcc().income = Number(document.getElementById("incomeInput").value);
   saveData(); updateAccountDropdown(); render();
   showSysModal("Saved", "Budget settings updated.");
 };
@@ -554,7 +648,7 @@ function importData(e) {
   reader.readAsText(e.target.files[0]);
 }
 
-checkPinHelp();
+checkPinButton();
 populateDropdowns();
 </script>
 
