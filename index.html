@@ -254,14 +254,14 @@
 
   <div class="card">
     <h3 id="displayTitle">Summary</h3>
-    <p>Budget: ₹<span id="incomeDisplay">0</span></p>
-    <p>Total Planned: ₹<span id="totalPlannedDisplay">0</span> 
+    <p>Total Budget: ₹<span id="incomeDisplay">0</span></p>
+    <p>Planned Expenses: ₹<span id="totalPlannedDisplay">0</span> 
       <span id="overPlannedTag" class="status-tag" style="display:none">OVER PLANNED</span>
     </p>
     <p>Spent (Checked): ₹<span id="spentDisplay">0</span> 
       <span id="overSpentTag" class="status-tag" style="display:none">OVERSPENT</span>
     </p>
-    <p><b>Remaining: ₹<span id="remainingDisplay">0</span></b></p>
+    <p><b>Remaining Budget: ₹<span id="remainingDisplay">0</span></b></p>
   </div>
 
   <div class="card">
@@ -629,12 +629,37 @@ document.getElementById("saveHeaderBtn").onclick = () => {
   showSysModal("Saved", "Budget settings updated.");
 };
 
-function exportData() {
-  const blob = new Blob([JSON.stringify(appData)], {type:"application/json"});
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = `budget_backup.json`;
-  a.click();
+/**
+ * Updated Export Function using Web Share API
+ * Designed to work safely in Android WebViews/GitHub Pages
+ */
+async function exportData() {
+  const dataString = JSON.stringify(appData, null, 2);
+  const fileName = `budget_backup_${new Date().toISOString().slice(0,10)}.json`;
+
+  // Use Share API if available (Modern Android/iOS)
+  if (navigator.canShare && navigator.share) {
+    try {
+      const file = new File([dataString], fileName, { type: "application/json" });
+      await navigator.share({
+        files: [file],
+        title: 'Budget Backup',
+        text: 'Monthly Budget Tracker Backup File'
+      });
+    } catch (err) {
+      if (err.name !== 'AbortError') {
+        showSysModal("Export Error", "Sharing not supported or failed.");
+      }
+    }
+  } else {
+    // Fallback for desktop browsers
+    const blob = new Blob([dataString], {type:"application/json"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = fileName;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }
 }
 
 function importData(e) {
