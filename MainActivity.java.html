@@ -1,0 +1,23 @@
+// Inside your onCreate method in MainActivity.java
+myWebView.getSettings().setJavaScriptEnabled(true);
+myWebView.getSettings().setDomStorageEnabled(true);
+
+myWebView.setDownloadListener(new DownloadListener() {
+    @Override
+    public void onDownloadStart(String url, String userAgent, String contentDisposition, String mimetype, long contentLength) {
+        // If the URL is our Base64 data from the JS above
+        if (url.startsWith("data:")) {
+            // This intent allows the user to 'Share' or 'Save' the file 
+            // using any compatible app on their phone (Drive, Email, Files, etc.)
+            Intent intent = new Intent(Intent.ACTION_SEND);
+            intent.setType(mimetype);
+            intent.putExtra(Intent.EXTRA_SUBJECT, "Budget Backup");
+            intent.putExtra(Intent.EXTRA_TEXT, "Here is your budget data backup.");
+            
+            // Note: For direct saving to storage, you'd need to decode the 
+            // Base64 string and write to a file, but the 'SEND' intent 
+            // is the most reliable way to handle backups in modern Android.
+            startActivity(Intent.createChooser(intent, "Save Backup via:"));
+        }
+    }
+});
