@@ -2,182 +2,175 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Monthly Budget Tracker</title>
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#4CAF50">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>BudgetNex</title>
+
+<link rel="manifest" href="assets/manifest.json">
+<link rel="icon" type="image/png" href="assets/icon-192.png">
+<link rel="apple-touch-icon" href="assets/icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lexend:wght@400;600;700&display=swap" rel="stylesheet">
+
+<meta name="theme-color" content="#008080">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Budget">
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
   :root { 
-    --primary: #4CAF50; 
-    --bg: #f2f2f2; 
+    --primary: #008080; 
+    --primary-container: #e0f2f2;
+    --on-primary: #ffffff;
+    --bg: #f2f7f7; 
     --app-gradient: linear-gradient(180deg, #e3f2fd 0%, #ffffff 100%);
-    --danger: #e74c3c; 
-    --text-muted: #7f8c8d; 
+    --surface: #ffffff;
+    --danger: #ba1a1a; 
+    --text-main: #002020;
+    --text-muted: #506262; 
+    --budget-teal: #008080;
+    --nex-dark: #191c1c;
+    --nex-charcoal: #36454F;
+    --outline: #dae5e4;
+    --shadow: 0 8px 24px rgba(0, 128, 128, 0.08);
   }
   
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
   body { 
-    font-family: sans-serif; 
-    background: var(--app-gradient); 
-    background-attachment: fixed;
-    margin:0; 
-    padding:10px; 
-    min-height: 100vh;
+    font-family: 'Inter', sans-serif; 
+    background: var(--bg); 
+    margin: 0; 
+    padding: env(safe-area-inset-top, 20px) 16px 100px 16px; 
+    color: var(--text-main);
+    line-height: 1.5;
   }
   
+  h1, h2, h3, .main-title { font-family: 'Lexend', sans-serif; }
+
+  .brand-budget { color: var(--budget-teal); font-weight: 700; }
+  .brand-nex { color: var(--nex-dark); font-weight: 400; }
+
   #pinOverlay {
     position: fixed; top:0; left:0; width:100%; height:100%; 
     background: var(--app-gradient);
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     z-index: 10000;
   }
-
-  .pin-input-wrapper {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    max-width: 280px; 
-    margin-bottom: 20px;
-    position: relative;
-  }
+  #pinOverlay h2 { margin-bottom: 0px; font-size: 34px; text-align: center; }
+  .title-footer { margin-top: 5px; text-align: center; padding-bottom: 15px; }
+  .title-footer p { margin: 0; font-size: 11px; color: var(--text-muted); font-weight: 500; }
   
+  .pin-input-wrapper {
+    display: flex; align-items: center; justify-content: center;
+    width: 100%; max-width: 280px; margin-bottom: 20px; position: relative;
+  }
   #pinInput {
-    width: 200px; 
-    text-align: center;
-    margin-top: 0; 
+    width: 200px; text-align: center; padding: 14px; font-size: 16px;
+    border: 1px solid #ccc; border-radius: 8px; background: white;
   }
-
   .info-btn {
-    background: #e1f5fe;
-    color: #0288d1;
-    border: 1px solid #b3e5fc;
-    border-radius: 50%;
-    width: 28px;
-    height: 28px;
-    font-size: 14px;
-    font-weight: bold;
-    cursor: pointer;
-    display: none; 
-    align-items: center;
-    justify-content: center;
-    position: absolute;
-    right: 0; 
+    background: #e1f5fe; color: #0288d1; border: 1px solid #b3e5fc;
+    border-radius: 50%; width: 28px; height: 28px; font-size: 14px;
+    font-weight: bold; cursor: pointer; display: none; align-items: center;
+    justify-content: center; position: absolute; right: 0; 
   }
-
-  .dev-footer {
-    margin-top: 40px; text-align: center; border-top: 1px solid #eee; padding-top: 15px; width: 250px;
-  }
+  .dev-footer { margin-top: 40px; text-align: center; border-top: 1px solid #eee; padding-top: 15px; width: 250px; }
   .dev-footer p { margin: 4px 0; font-size: 13px; color: #333; }
   .dev-footer .label { color: var(--text-muted); font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
-  .dev-footer a { color: var(--primary); text-decoration: none; font-weight: bold; }
+  .dev-footer a { color: var(--budget-teal); text-decoration: none; font-weight: bold; }
 
-  .modal-overlay {
-    display: none; position: fixed; top:0; left:0; width:100%; height:100%;
-    background: rgba(0,0,0,0.5); z-index: 20000; justify-content: center; align-items: center;
-  }
-  .modal-content { background: white; padding: 20px; border-radius: 12px; width: 90%; max-width: 400px; }
-
-  #mainContent { display: none; padding-bottom: 50px; }
+  .main-title { text-align: center; padding: 20px 0 10px 0; font-size: 26px; letter-spacing: -0.5px; }
   .card {
-    background:#fff; padding:15px; margin-bottom:10px;
-    border-radius:12px; box-shadow:0 2px 5px rgba(0,0,0,0.1);
+    background: var(--surface); padding: 22px; margin-bottom: 20px;
+    border-radius: 24px; box-shadow: var(--shadow); border: 1px solid var(--outline);
+  }
+  .card h3 { 
+    margin: 0 0 18px 0; font-size: 14px; color: var(--text-muted); 
+    font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px;
   }
 
-  .account-bar { 
-    display: flex; 
-    gap: 10px; 
-    margin-bottom: 10px; 
-    background: #fff;
-    padding: 5px;
-    border-radius: 12px;
-    align-items: center;
+  input, select {
+    width:100%; padding: 14px 16px; font-size: 16px; font-family: 'Inter', sans-serif;
+    border: 1.5px solid var(--outline); border-radius: 14px; background: #fdfdfd;
+    color: var(--text-main); transition: all 0.2s;
   }
-  
-  #accountSelect {
-    flex: 1;
-    appearance: none;
-    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-    background-repeat: no-repeat;
-    background-position: right 10px center;
-    background-size: 14px;
-    padding: 12px 35px 12px 15px;
-    margin-top: 0;
-    border: 1px solid #ddd;
-    font-weight: 600;
-    color: #333;
-    background-color: #fafafa;
-  }
+  input:focus { outline: none; border-color: var(--primary); background: white; }
 
-  input, select, button {
-    width:100%; padding:14px; margin-top:8px; font-size:16px;
-    border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box;
+  button { 
+    background: var(--primary); color: var(--on-primary); border: none; padding: 16px 24px; 
+    border-radius: 16px; font-weight: 600; font-size: 15px; font-family: 'Lexend', sans-serif;
+    cursor: pointer; transition: transform 0.1s, opacity 0.2s;
   }
-  button { background: var(--primary); color:white; border:none; font-weight: bold; cursor: pointer; }
-  
   .btn-outline-primary { 
-    background: transparent; color: var(--primary); border: 2px solid var(--primary); 
+    background: transparent; color: var(--budget-teal); border: 2px solid var(--budget-teal); 
   }
+  .btn-secondary { background: #dae5e4; color: var(--nex-dark); }
+  .btn-danger { background: #ffdada; color: var(--danger); }
 
-  .category-header {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 12px 0; margin-bottom: 5px; cursor: pointer;
-  }
-  .expense {
-    display:flex; justify-content:space-between; align-items: center;
-    padding:12px 0; border-bottom: 1px dashed #eee;
-  }
-  .expense-info { flex: 1; cursor: pointer; display: flex; align-items: center; gap: 6px; overflow: hidden; }
-  .expense-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 14px; }
-  
-  .cat-tag, .status-tag { 
-    font-size: 8px; padding: 2px 5px; 
-    border-radius: 4px; border-width: 1px; border-style: solid;
-    text-transform: uppercase; white-space: nowrap; font-weight: bold;
-  }
+  .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .summary-item { background: var(--primary-container); padding: 16px; border-radius: 18px; border: 1px solid rgba(0, 128, 128, 0.1); position: relative; }
+  .summary-item .label { font-size: 12px; font-weight: 600; color: var(--primary); display: block; margin-bottom: 4px; }
+  .summary-item .val { font-size: 20px; font-weight: 800; color: var(--text-main); font-family: 'Lexend', sans-serif; }
 
-  .cat-tag { background: rgba(255,255,255,0.8); }
-  .status-tag { color: var(--danger); border-color: var(--danger); margin-left: 8px; display: inline-block; }
-  
-  .expense-actions { display: flex; gap: 5px; margin-left: 5px; }
-  .expense button { width: auto; padding: 6px 8px; margin: 0; background: #f8f8f8; color: #333; font-size: 12px; }
-  .done .expense-text { text-decoration: line-through; color:#aaa; }
-  
+  .expense { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 1px solid var(--outline); }
+  .expense-text { font-weight: 600; font-size: 15px; color: var(--text-main); display: block; }
+  .expense-subtext { font-size: 14px; font-weight: 700; color: var(--text-main); margin-top: 2px; }
+  .cat-tag, .fixed-tag { font-size: 10px; padding: 3px 10px; border-radius: 8px; font-weight: 700; border: 1px solid; margin-top: 6px; display: inline-block; background: white; }
+  .fixed-tag { border-color: #5e35b1; color: #5e35b1; margin-right: 5px; }
+  .status-tag { background: var(--danger); color: white; font-size: 9px; padding: 2px 6px; border-radius: 6px; font-weight: 800; margin-left: 5px;}
+
   .collapsible-content { display: none; padding-top: 5px; }
   .collapsible-content.active { display: block; }
+  .category-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; cursor: pointer; }
+  .report-toggle-container { display: flex; background: #f1f3f4; padding: 4px; border-radius: 8px; margin-bottom: 15px; }
+  .report-toggle-btn { flex: 1; padding: 8px; font-size: 13px; text-align: center; cursor: pointer; border-radius: 6px; transition: 0.2s; font-weight: bold; color: #666; }
+  .report-toggle-btn.active { background: white; color: var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
   .chart-container { position: relative; height: 220px; width: 100%; margin-bottom: 15px; }
   .report-item { display: flex; justify-content: space-between; font-size: 13px; padding: 8px 0; border-bottom: 1px solid #f9f9f9; }
 
-  /* Compact Overage Tags */
-  .overage-tag-container {
-    display: flex; flex-wrap: wrap; gap: 6px; margin-top: 15px; border-top: 1px solid #eee; padding-top: 12px;
+  .fab {
+    position: fixed; bottom: 32px; right: 24px; width: 64px; height: 64px; border-radius: 20px;
+    background: var(--primary); color: white; box-shadow: 0 10px 25px -5px rgba(0, 128, 128, 0.4);
+    display: flex; align-items: center; justify-content: center; font-size: 28px; z-index: 1000;
   }
-  .overage-rect {
-    flex: 1; min-width: 100px; padding: 6px 8px; border-radius: 6px; text-align: center;
-    background: #fff5f5; border: 1px solid #feb2b2; color: #c53030;
-  }
-  .overage-rect .overage-label { font-size: 9px; text-transform: uppercase; font-weight: bold; display: block; margin-bottom: 2px; }
-  .overage-rect .overage-val { font-size: 12px; font-weight: bold; }
 
-  .btn-danger { background: var(--danger); margin-top: 10px; }
-  .btn-outline { background: transparent; color: #777; border: 1px solid #ccc; margin-top: 10px; font-size: 14px; }
+  .modal-overlay {
+    display: none; position: fixed; top:0; left:0; width:100%; height:100%;
+    background: rgba(0, 32, 32, 0.6); z-index: 20000; justify-content: center; align-items: flex-end;
+  }
+  .modal-content { background: white; padding: 24px; border-radius: 28px 28px 0 0; width: 100%; max-width: 500px; animation: slideUp 0.3s ease-out; }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+  #toast {
+    visibility: hidden; min-width: 250px; background-color: var(--nex-dark); color: #fff; text-align: center;
+    border-radius: 12px; padding: 16px; position: fixed; z-index: 30000; left: 50%; bottom: 100px;
+    transform: translateX(-50%); font-weight: 500;
+  }
+  #toast.show { visibility: visible; animation: fadeInOut 4s; }
+  @keyframes fadeInOut { 0%, 100% {opacity: 0;} 10%, 90% {opacity: 1;} }
+
+  #mainContent { display: none; max-width: 600px; margin: 0 auto; }
+  .done .expense-text { text-decoration: line-through; opacity: 0.5; }
+  .checkbox-row { display: flex; align-items: center; gap: 12px; background: var(--bg); padding: 12px; border-radius: 12px; margin-bottom: 18px; }
+  .checkbox-row input { width: 22px; height: 22px; margin:0; }
 </style>
 </head>
 
 <body>
 
+<div id="toast">Action Complete</div>
+
 <div id="pinOverlay">
-  <h2 style="margin-bottom:25px;">🧾 Monthly Budget Planner</h2>
-  
+  <h2><span class="brand-budget">Budget</span><span class="brand-nex">Nex</span></h2>
+  <div class="title-footer">
+    <p>A simple Budget Planner for everyone</p>
+  </div>
   <div class="pin-input-wrapper">
     <input type="password" id="pinInput" inputmode="numeric" placeholder="Enter PIN">
-    <div id="infoBtn" class="info-btn" onclick="showPinInfo()">i</div>
+    <div id="infoBtn" class="info-btn" onclick="alert('Default PIN is 1234')">i</div>
   </div>
-  
   <button id="unlockBtn" class="btn-outline-primary" style="width:200px; margin-top: 0;">Sign In</button>
-  
   <div class="dev-footer">
     <p><span class="label">Developed by</span><br>Arfat Pathan</p>
     <p><span class="label">Company</span><br>CompuNex</p>
@@ -185,120 +178,133 @@
   </div>
 </div>
 
-<div id="accountModal" class="modal-overlay">
+<div class="fab" onclick="toggleSection('addExpenseSection', true)">+</div>
+
+<div id="addExpenseSection" class="modal-overlay" onclick="if(event.target == this) toggleSection('addExpenseSection', false)">
   <div class="modal-content">
-    <h3>Add New Account</h3>
-    <input type="text" id="newAccNameInput" placeholder="Enter account name">
-    <div style="display: flex; gap: 10px; margin-top: 10px;">
-      <button onclick="saveNewAccount()">Create</button>
-      <button onclick="closeModal('accountModal')" style="background: #ccc;">Cancel</button>
+    <div style="width: 45px; height: 5px; background: var(--outline); border-radius: 10px; margin: 0 auto 24px auto;"></div>
+    <h3>Add New Expense</h3>
+    <input id="expName" placeholder="e.g. Rent, Uber" oninput="autoCategorize()" style="margin-bottom:12px">
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom:12px">
+        <input id="expAmount" type="number" placeholder="Amount (₹)">
+        <select id="expCategory"></select>
     </div>
+    <div class="checkbox-row">
+        <input type="checkbox" id="expFixed">
+        <span>Fixed Expense</span>
+    </div>
+    <button id="addExpBtn" style="width:100%">Add to List</button>
   </div>
 </div>
 
-<div id="sysModal" class="modal-overlay">
+<div id="accountModal" class="modal-overlay">
   <div class="modal-content">
-    <h3 id="sysModalTitle">Notification</h3>
-    <p id="sysModalMsg" style="font-size: 14px; color: #444; margin-bottom: 20px; white-space: pre-line;"></p>
-    <div style="display: flex; gap: 10px;">
-      <button id="sysModalBtnOk" style="margin-top:0;">OK</button>
-      <button id="sysModalBtnCancel" style="margin-top:0; background: #ccc; display: none;">Cancel</button>
-    </div>
+    <h3>New Account</h3>
+    <input type="text" id="newAccName" placeholder="Account Name" style="margin-bottom:12px">
+    <input type="number" id="newAccIncome" placeholder="Monthly Budget (₹)" style="margin-bottom:20px">
+    <button onclick="saveNewAccount()" style="width:100%; margin-bottom:10px">Create</button>
+    <button onclick="closeModal('accountModal')" class="btn-secondary" style="width:100%">Cancel</button>
   </div>
 </div>
 
 <div id="editModal" class="modal-overlay">
   <div class="modal-content">
-    <h3>Edit Expense</h3>
-    <input type="text" id="editExpName" placeholder="Name">
-    <input type="number" id="editExpAmount" placeholder="Amount">
-    <select id="editExpCategory"></select>
-    <div style="display: flex; gap: 10px; margin-top: 10px;">
-      <button onclick="saveEdit()">Save Changes</button>
-      <button onclick="closeModal('editModal')" style="background: #ccc;">Cancel</button>
+    <h3>Edit Entry</h3>
+    <input type="text" id="editExpName" style="margin-bottom:12px">
+    <input type="number" id="editExpAmount" style="margin-bottom:12px">
+    <select id="editExpCategory" style="margin-bottom:12px"></select>
+    <div class="checkbox-row">
+        <input type="checkbox" id="editExpFixed"> <span>Fixed Expense</span>
     </div>
+    <button onclick="saveEdit()" style="width:100%; margin-bottom:10px">Save Changes</button>
+    <button onclick="closeModal('editModal')" class="btn-secondary" style="width:100%">Cancel</button>
   </div>
 </div>
 
 <div id="pinModal" class="modal-overlay">
   <div class="modal-content">
-    <h3>Security Settings</h3>
-    <p style="font-size: 14px; color: #666; margin-bottom: 5px;">Set a new security PIN</p>
-    <input type="password" id="newPinInput" inputmode="numeric" placeholder="New PIN">
-    <div style="display: flex; gap: 10px; margin-top: 10px;">
-      <button onclick="saveNewPin()">Update PIN</button>
-      <button onclick="closeModal('pinModal')" style="background: #ccc;">Cancel</button>
-    </div>
+    <h3>Change App PIN</h3>
+    <input type="password" id="oldPin" placeholder="Current PIN" style="margin-bottom:12px">
+    <input type="password" id="newPin" placeholder="New 4-digit PIN" style="margin-bottom:20px">
+    <button onclick="updatePin()" style="width:100%; margin-bottom:10px">Update PIN</button>
+    <button onclick="closeModal('pinModal')" class="btn-secondary" style="width:100%">Cancel</button>
   </div>
 </div>
 
 <div id="mainContent">
-  <div class="account-bar">
-    <select id="accountSelect" onchange="switchAccount(this.value)"></select>
-    <button onclick="openAccountModal()" style="width:auto; margin-top:0;">+ New</button>
-  </div>
-
-  <div class="card">
-    <input type="text" id="budgetName" placeholder="Budget Name">
-    <input type="number" id="incomeInput" placeholder="Monthly Budget">
-    <button id="saveHeaderBtn">Save Budget</button>
-  </div>
-
-  <div class="card">
-    <h3>Add Expense</h3>
-    <input id="expName" placeholder="Name (e.g. Rent, Milk, Uber)" oninput="autoCategorize()">
-    <input id="expAmount" type="number" placeholder="Amount">
-    <select id="expCategory"></select>
-    <button id="addExpBtn">Add Expense</button>
-  </div>
-
-  <div class="card">
-    <h3 id="displayTitle">Summary</h3>
-    <p>Budget: ₹<span id="incomeDisplay">0</span></p>
-    <p>Total Planned: ₹<span id="totalPlannedDisplay">0</span> 
-      <span id="overPlannedTag" class="status-tag" style="display:none">OVER PLANNED</span>
-    </p>
-    <p>Spent (Checked): ₹<span id="spentDisplay">0</span> 
-      <span id="overSpentTag" class="status-tag" style="display:none">OVERSPENT</span>
-    </p>
-    <p><b>Remaining: ₹<span id="remainingDisplay">0</span></b></p>
-  </div>
-
-  <div class="card">
-    <div class="category-header" onclick="toggleSection('expensesListSection')">
-      <b>🧾 Expenses</b> <span id="expensesListSectionIcon">▲</span>
+  <div class="main-title"><span class="brand-budget">Budget</span><span class="brand-nex">Nex</span></div>
+  
+  <div class="card" style="padding: 12px 18px; border-radius: 18px;">
+    <div style="display: flex; gap: 12px; align-items: center;">
+        <select id="accountSelect" onchange="switchAccount(this.value)" style="border:none; background:transparent; font-weight: 700; font-size: 18px; font-family: 'Lexend'; padding:0; color: var(--primary);"></select>
+        <button onclick="openAccountModal()" class="btn-outline-primary" style="padding: 8px 16px; border-radius: 12px; font-size: 13px; font-weight: bold;">+ New</button>
     </div>
-    <div id="expensesListSection" class="collapsible-content active">
-        <div id="categoriesContainer"></div>
+  </div>
+
+  <div class="card">
+    <h3 id="displayTitle">Financial Snapshot</h3>
+    <div class="summary-grid">
+        <div class="summary-item"><span class="label">Total Budget</span><span class="val">₹<span id="incomeDisplay">0</span></span></div>
+        <div class="summary-item" style="background: white;"><span class="label">Remaining</span><span class="val">₹<span id="remainingDisplay">0</span></span></div>
+        <div class="summary-item"><span class="label">Planned</span><span class="val">₹<span id="totalPlannedDisplay">0</span></span><span id="overPlannedTag" class="status-tag" style="display:none">OVER</span></div>
+        <div class="summary-item" style="background: #fff5f5;"><span class="label" style="color: #be123c">Spent</span><span class="val" style="color: var(--danger)">₹<span id="spentDisplay">0</span></span><span id="overSpentTag" class="status-tag" style="display:none">OVER</span></div>
     </div>
+  </div>
+
+  <div class="card">
+    <div class="category-header" onclick="toggleSection('budgetHeaderSection')">
+        <span style="font-weight: 700; font-size: 15px; color: var(--nex-dark)">⚙️ Budget Settings</span>
+        <span id="budgetHeaderSectionIcon">▼</span>
+    </div>
+    <div id="budgetHeaderSection" class="collapsible-content">
+        <input type="text" id="budgetName" placeholder="Budget Name" style="margin-bottom:12px">
+        <input type="number" id="incomeInput" placeholder="Budget Amount" style="margin-bottom:12px">
+        <button id="saveHeaderBtn" style="width: 100%;">Save Preferences</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>🧾 Expense Ledger</h3>
+    <div id="categoriesContainer"></div>
   </div>
 
   <div class="card">
     <div class="category-header" onclick="toggleSection('chartSection')">
-      <b>📊 Spending Report</b> <span id="chartSectionIcon">▼</span>
+      <span style="font-weight: 700; font-size: 15px; color: var(--nex-dark)">📊 Spending Report</span>
+      <span id="chartSectionIcon">▼</span>
     </div>
     <div id="chartSection" class="collapsible-content">
+      <div class="report-toggle-container">
+        <div id="toggleSpent" class="report-toggle-btn active" onclick="setReportMode('spent')">Spent</div>
+        <div id="togglePlanned" class="report-toggle-btn" onclick="setReportMode('planned')">Planned</div>
+      </div>
+      <div style="text-align: center; margin-bottom: 15px;">
+        <span id="reportOverPlannedTag" class="status-tag" style="display:none"></span>
+        <span id="reportOverSpentTag" class="status-tag" style="display:none"></span>
+      </div>
       <div class="chart-container">
         <canvas id="spendingChart"></canvas>
       </div>
       <div id="reportBreakdown"></div>
-      <div id="overageContainer" class="overage-tag-container"></div>
     </div>
   </div>
 
-  <div class="backup-zone" style="display:flex; gap:10px; margin-top:20px;">
-    <button class="btn-outline" onclick="exportData()">💾 Backup</button>
-    <button class="btn-outline" onclick="document.getElementById('importFile').click()">📤 Restore</button>
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px;">
+    <button class="btn-secondary" onclick="exportData()">Backup</button>
+    <button class="btn-secondary" onclick="document.getElementById('importFile').click()">Restore</button>
   </div>
   <input type="file" id="importFile" style="display:none" onchange="importData(event)">
 
-  <button class="btn-outline" id="changePinBtn">🔑 Change App PIN</button>
-  <button onclick="confirmDeleteAccount()" class="btn-danger" >🗑️ Delete Account</button>
+  <div style="display:flex; flex-direction: column; gap: 12px;">
+    <button class="btn-secondary" style="background:transparent; border: 1.5px solid var(--outline);" onclick="document.getElementById('pinModal').style.display='flex'">Update Security PIN</button>
+    <button onclick="confirmDeleteAccount()" class="btn-danger">Close This Account</button>
+  </div>
 </div>
 
 <script>
 let appData = {
   currentAccount: "Personal",
+  reportMode: "spent",
   accounts: {
     "Personal": { income: 0, title: "", expenses: [], history: [] }
   }
@@ -320,74 +326,78 @@ const CATEGORY_COLORS = {
 };
 
 const KEYWORDS = {
-  "🏠 Housing": ["rent", "maintenance", "electricity", "bill", "gas", "broker", "internet", "atm", "gas cylinder", "water", "livpure", "ro", "phone", "recharge"],
-  "🛒 Groceries": ["milk", "vegetable", "fruit", "grocery", "mart", "supermarket", "egg", "meat", "dmart", "zepto", "blinkit", "ratandeep"],
-  "🍽️ Dining Out / Online food": ["zomato", "swiggy", "restaurant", "hotel", "pizza", "burger", "cafe", "dinner", "lunch"],
-  "🚕 Transportation": ["uber", "ola", "auto", "metro", "bus", "train", "flight", "petrol", "diesel", "fuel", "riksha", "rapido"],
-  "🚗 Vehicle Maintenance": ["service", "tyre", "puncture", "repair", "insurance", "wash", "bike repair", "car repair"],
-  "🏥 Healthcare": ["doctor", "medicine", "pharmacy", "hospital", "clinic", "medical"],
-  "📚 Education": ["fees", "school", "college", "book", "course", "tutor", "special education"],
-  "👶 Childcare": ["diaper", "nanny", "toy", "baby", "aptamil"],
-  "🛍️ Shopping": ["amazon", "flipkart", "clothes", "shoes", "mall", "electronics", "meesho"],
-  "💰 Savings": ["emergency", "fd", "rd", "save", "saving"],
-  "📈 Investments": ["stock", "mutual fund", "crypto", "sip", "gold"],
-  "💳 Debt Payments": ["emi", "loan", "credit card", "interest"],
-  "🧹 House Help": ["maid", "cook", "driver", "salary", "security", "kamwali"],
-  "🤝 Help and Donations": ["charity", "gift", "temple", "ngo", "zakaat", "zakat"]
+  "🏠 Housing": ["rent", "maintenance", "electricity", "bill", "gas", "internet", "water", "phone", "recharge"],
+  "🛒 Groceries": ["milk", "vegetable", "fruit", "grocery", "mart", "zepto", "blinkit", "dmart"],
+  "🍽️ Dining Out / Online food": ["zomato", "swiggy", "restaurant", "hotel", "pizza", "burger", "cafe"],
+  "🚕 Transportation": ["uber", "ola", "auto", "metro", "bus", "petrol", "diesel", "fuel"],
+  "🚗 Vehicle Maintenance": ["service", "repair", "insurance", "wash"],
+  "🏥 Healthcare": ["doctor", "medicine", "pharmacy", "hospital"],
+  "📚 Education": ["fees", "school", "college", "book"],
+  "👶 Childcare": ["diaper", "nanny", "toy", "baby"],
+  "🛍️ Shopping": ["amazon", "flipkart", "clothes", "shoes", "mall"],
+  "💰 Savings": ["emergency", "fd", "rd", "save"],
+  "📈 Investments": ["stock", "mutual fund", "sip", "gold"],
+  "💳 Debt Payments": ["emi", "loan", "credit card"],
+  "🧹 House Help": ["maid", "cook", "driver", "salary"],
+  "🤝 Help and Donations": ["charity", "gift", "ngo", "zakat"]
 };
 
 let editingExpenseId = null;
 let chartInstance = null;
 
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  t.innerText = msg; t.className = "show";
+  setTimeout(() => { t.className = t.className.replace("show", ""); }, 4000);
+}
+
 function checkPinButton() {
   const currentPin = localStorage.getItem("app_pin") || "1234";
   const infoBtn = document.getElementById('infoBtn');
-  if (currentPin === "1234") {
-    infoBtn.style.display = 'flex';
-  } else {
-    infoBtn.style.display = 'none';
-  }
+  if (infoBtn) infoBtn.style.display = (currentPin === "1234") ? 'flex' : 'none';
 }
 
-function showSysModal(title, msg, onOk, showCancel = false) {
-  const m = document.getElementById('sysModal');
-  document.getElementById('sysModalTitle').innerText = title;
-  document.getElementById('sysModalMsg').innerText = msg;
-  const okBtn = document.getElementById('sysModalBtnOk');
-  const cancelBtn = document.getElementById('sysModalBtnCancel');
-  
-  okBtn.onclick = () => { m.style.display = 'none'; if(onOk) onOk(); };
-  cancelBtn.style.display = showCancel ? 'block' : 'none';
-  cancelBtn.onclick = () => { m.style.display = 'none'; };
-  m.style.display = 'flex';
+function setReportMode(mode) {
+  appData.reportMode = mode;
+  document.getElementById('toggleSpent').classList.toggle('active', mode === 'spent');
+  document.getElementById('togglePlanned').classList.toggle('active', mode === 'planned');
+  saveData(); updateChart();
 }
 
 function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-
-function showPinInfo() {
-  showSysModal(
-    "Security Help", 
-    "Default access key is 1234.\n\nYou can change this PIN anytime in the App Settings after logging in."
-  );
-}
-
-function openAccountModal() {
-  document.getElementById('newAccNameInput').value = "";
-  document.getElementById('accountModal').style.display = 'flex';
-}
+function openAccountModal() { document.getElementById('accountModal').style.display = 'flex'; }
 
 function saveNewAccount() {
-  const name = document.getElementById('newAccNameInput').value.trim();
-  if (name && !appData.accounts[name]) {
-    const currentAcc = getActiveAcc();
-    const copiedExpenses = currentAcc.expenses.map(exp => ({...exp, done: false}));
-    appData.accounts[name] = { income: currentAcc.income, title: name, expenses: copiedExpenses, history: [] };
-    appData.currentAccount = name;
+  const name = document.getElementById("newAccName").value.trim();
+  const inc = Number(document.getElementById("newAccIncome").value);
+  if (!name) return alert("Enter account name.");
+  if (appData.accounts[name]) return alert("Account exists.");
+  const currentExpenses = getActiveAcc().expenses || [];
+  const fixedToCarry = currentExpenses.filter(e => e.fixed).map(e => ({ ...e, id: Date.now() + Math.random(), done: false }));
+  appData.accounts[name] = { income: inc, expenses: fixedToCarry };
+  appData.currentAccount = name;
+  saveData(); updateAccountDropdown(); render(); closeModal('accountModal');
+}
+
+function confirmDeleteAccount() {
+  if (Object.keys(appData.accounts).length <= 1) return alert("At least one account is required.");
+  if (confirm(`Delete account "${appData.currentAccount}"?`)) {
+    delete appData.accounts[appData.currentAccount];
+    appData.currentAccount = Object.keys(appData.accounts)[0];
     saveData(); updateAccountDropdown(); render();
-    closeModal('accountModal');
-  } else if (appData.accounts[name]) {
-    showSysModal("Error", "Account name already exists.");
   }
+}
+
+function updatePin() {
+    const currentPin = localStorage.getItem("app_pin") || "1234";
+    const oldP = document.getElementById('oldPin').value;
+    const newP = document.getElementById('newPin').value;
+    if (oldP !== currentPin) return alert("Incorrect current PIN.");
+    if (newP && newP.length === 4) {
+        localStorage.setItem("app_pin", newP);
+        alert("PIN updated!"); closeModal('pinModal');
+        checkPinButton();
+    }
 }
 
 function autoCategorize() {
@@ -403,8 +413,7 @@ function autoCategorize() {
 function loadData() {
   const saved = localStorage.getItem("budget_pro_master");
   if (saved) appData = JSON.parse(saved);
-  populateDropdowns();
-  updateAccountDropdown();
+  populateDropdowns(); updateAccountDropdown();
 }
 
 function saveData() { localStorage.setItem("budget_pro_master", JSON.stringify(appData)); }
@@ -440,24 +449,24 @@ function render() {
   document.getElementById("overPlannedTag").style.display = (totalPlanned > acc.income && acc.income > 0) ? "inline-block" : "none";
   document.getElementById("overSpentTag").style.display = (spent > acc.income && acc.income > 0) ? "inline-block" : "none";
 
-  let html = `<div>`;
+  let html = ``;
   acc.expenses.sort((a,b) => (b.done - a.done)).forEach(e => {
     const color = CATEGORY_COLORS[e.category] || "#777";
     html += `
     <div class="expense ${e.done ? 'done' : ''}">
-      <div class="expense-info" onclick="toggleExpense(${e.id})">
-        <span class="expense-text"><b>${e.name}</b> ₹${e.amount}</span>
+      <div class="expense-info" onclick="toggleExpense(${e.id})" style="flex:1; cursor:pointer">
+        <span class="expense-text">${e.name}</span>
+        <span class="expense-subtext">₹${e.amount}</span><br>
+        ${e.fixed ? '<span class="fixed-tag">FIXED</span>' : ''}
         <span class="cat-tag" style="border-color: ${color}; color: ${color}">${e.category}</span>
       </div>
-      <div class="expense-actions">
-        <button onclick="openEditModal(${e.id}, event)">✏️</button>
-        <button onclick="removeExpense(${e.id})">❌</button>
+      <div style="display:flex; gap:15px">
+        <span onclick="openEditModal(${e.id}, event)">✏️</span>
+        <span onclick="removeExpense(${e.id})">❌</span>
       </div>
     </div>`;
   });
-  html += `</div>`;
-
-  document.getElementById("categoriesContainer").innerHTML = html;
+  document.getElementById("categoriesContainer").innerHTML = html || "<p style='text-align:center; color:#999'>No expenses yet.</p>";
   document.getElementById("incomeDisplay").innerText = acc.income;
   document.getElementById("totalPlannedDisplay").innerText = totalPlanned;
   document.getElementById("spentDisplay").innerText = spent;
@@ -468,71 +477,19 @@ function render() {
   updateChart();
 }
 
-function toggleSection(id) {
+function toggleSection(id, forceState = null) {
   const content = document.getElementById(id);
   const icon = document.getElementById(id + 'Icon');
-  content.classList.toggle('active');
-  icon.innerText = content.classList.contains('active') ? '▲' : '▼';
-  if(id === 'chartSection' && content.classList.contains('active')) updateChart();
-}
-
-function updateChart() {
-  const acc = getActiveAcc();
-  const totals = {};
-  let overallTotal = 0;
-  let spentTotal = 0;
-
-  acc.expenses.forEach(e => {
-    totals[e.category] = (totals[e.category] || 0) + Number(e.amount);
-    overallTotal += Number(e.amount);
-    if (e.done) spentTotal += Number(e.amount);
-  });
-
-  // Category Breakdown
-  let breakdownHtml = "";
-  const sortedCats = Object.keys(totals).sort((a,b) => totals[b] - totals[a]);
-  sortedCats.forEach(cat => {
-    const amt = totals[cat];
-    const pct = overallTotal > 0 ? ((amt/overallTotal)*100).toFixed(1) : 0;
-    breakdownHtml += `<div class="report-item"><span>${cat}</span><span>₹${amt} <b>(${pct}%)</b></span></div>`;
-  });
-  document.getElementById('reportBreakdown').innerHTML = breakdownHtml;
-
-  // Smaller Rectangular Overage Tags
-  let overageHtml = "";
-  if (acc.income > 0) {
-    if (overallTotal > acc.income) {
-      const diff = overallTotal - acc.income;
-      const pct = ((diff / acc.income) * 100).toFixed(1);
-      overageHtml += `
-        <div class="overage-rect">
-          <span class="overage-label">Over-Planned</span>
-          <span class="overage-val">₹${diff} (${pct}%)</span>
-        </div>`;
-    }
-    if (spentTotal > acc.income) {
-      const diff = spentTotal - acc.income;
-      const pct = ((diff / acc.income) * 100).toFixed(1);
-      overageHtml += `
-        <div class="overage-rect">
-          <span class="overage-label">Over-Spent</span>
-          <span class="overage-val">₹${diff} (${pct}%)</span>
-        </div>`;
-    }
-  }
+  if (id === 'addExpenseSection') { content.style.display = forceState ? 'flex' : 'none'; return; }
   
-  const container = document.getElementById('overageContainer');
-  container.innerHTML = overageHtml;
-  container.style.display = overageHtml === "" ? "none" : "flex";
-
-  if (chartInstance) chartInstance.destroy();
-  const canvas = document.getElementById('spendingChart');
-  if(!canvas) return;
-  chartInstance = new Chart(canvas.getContext('2d'), {
-    type: 'doughnut',
-    data: { labels: sortedCats, datasets: [{ data: sortedCats.map(c => totals[c]), backgroundColor: sortedCats.map(c => CATEGORY_COLORS[c]), borderWidth: 1 }] },
-    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-  });
+  if (forceState !== null) {
+    if (forceState) content.classList.add('active');
+    else content.classList.remove('active');
+  } else {
+    content.classList.toggle('active');
+  }
+  if(icon) icon.innerText = content.classList.contains('active') ? '▲' : '▼';
+  if(id === 'chartSection' && content.classList.contains('active')) updateChart();
 }
 
 window.toggleExpense = (id) => {
@@ -542,18 +499,20 @@ window.toggleExpense = (id) => {
 };
 
 window.removeExpense = (id) => {
+  if(!confirm("Delete?")) return;
   const acc = getActiveAcc();
   acc.expenses = acc.expenses.filter(e => e.id !== id);
   saveData(); render();
 };
 
 window.openEditModal = (id, event) => {
-  if(event) event.stopPropagation();
+  event.stopPropagation();
   const e = getActiveAcc().expenses.find(x => x.id === id);
   editingExpenseId = id;
   document.getElementById('editExpName').value = e.name;
   document.getElementById('editExpAmount').value = e.amount;
   document.getElementById('editExpCategory').value = e.category;
+  document.getElementById('editExpFixed').checked = !!e.fixed;
   document.getElementById('editModal').style.display = 'flex';
 };
 
@@ -563,109 +522,119 @@ window.saveEdit = () => {
     e.name = document.getElementById('editExpName').value;
     e.amount = Number(document.getElementById('editExpAmount').value);
     e.category = document.getElementById('editExpCategory').value;
-    saveData(); render();
-  }
-  closeModal('editModal');
-};
-
-document.getElementById("changePinBtn").onclick = () => { 
-  document.getElementById('pinModal').style.display = 'flex'; 
-};
-
-window.saveNewPin = () => {
-  const p = document.getElementById('newPinInput').value;
-  if (p && p.length >= 4) { 
-    localStorage.setItem("app_pin", p); 
-    showSysModal("Success", "Security PIN updated."); 
-    closeModal('pinModal');
-    checkPinButton(); 
-  } else {
-    showSysModal("Input Error", "PIN must be at least 4 digits.");
+    e.fixed = document.getElementById('editExpFixed').checked;
+    saveData(); render(); closeModal('editModal');
   }
 };
 
-window.confirmDeleteAccount = () => {
-  if(Object.keys(appData.accounts).length <= 1) return showSysModal("Action Denied", "Cannot delete the only account.");
-  showSysModal("Confirm Delete", "Permanently remove this account?", () => {
-    delete appData.accounts[appData.currentAccount];
-    appData.currentAccount = Object.keys(appData.accounts)[0];
-    saveData(); updateAccountDropdown(); render();
-  }, true);
-};
-
-document.getElementById("unlockBtn").onclick = () => {
+const handleLogin = () => {
   const savedPin = localStorage.getItem("app_pin") || "1234";
   if (document.getElementById("pinInput").value === savedPin) {
     document.getElementById("pinOverlay").style.display = "none";
     document.getElementById("mainContent").style.display = "block";
     loadData(); render();
-  } else {
-    showSysModal("Access Denied", "Incorrect PIN entered.");
-  }
+  } else { alert("Wrong PIN"); }
 };
 
-document.getElementById("pinInput").addEventListener("keypress", (e) => {
-  if (e.key === "Enter") document.getElementById("unlockBtn").click();
-});
+document.getElementById("unlockBtn").onclick = handleLogin;
+document.getElementById("pinInput").addEventListener("keypress", (e) => { if(e.key === "Enter") handleLogin(); });
 
 document.getElementById("addExpBtn").onclick = () => {
-  const n = document.getElementById("expName"), a = document.getElementById("expAmount"), c = document.getElementById("expCategory");
-  if(!n.value || !a.value) return showSysModal("Missing Info", "Please enter both name and amount.");
-  getActiveAcc().expenses.push({id: Date.now(), name: n.value, amount: Number(a.value), category: c.value, done: false});
-  n.value = ""; a.value = ""; saveData(); render();
+  const n = document.getElementById("expName"), a = document.getElementById("expAmount"), c = document.getElementById("expCategory"), f = document.getElementById("expFixed");
+  if(!n.value || !a.value) return alert("Fill all fields");
+  getActiveAcc().expenses.push({id: Date.now(), name: n.value, amount: Number(a.value), category: c.value, fixed: f.checked, done: false});
+  saveData(); render(); toggleSection('addExpenseSection', false);
+  n.value = ""; a.value = ""; f.checked = false;
 };
 
 document.getElementById("saveHeaderBtn").onclick = () => {
   const newName = document.getElementById("budgetName").value.trim();
   const oldName = appData.currentAccount;
   if (newName && newName !== oldName) {
-      if (appData.accounts[newName]) return showSysModal("Error", "Name already exists.");
+      if (appData.accounts[newName]) return alert("Name exists.");
       appData.accounts[newName] = appData.accounts[oldName];
       delete appData.accounts[oldName];
       appData.currentAccount = newName;
   }
   getActiveAcc().income = Number(document.getElementById("incomeInput").value);
-  saveData(); updateAccountDropdown(); render();
-  showSysModal("Saved", "Budget settings updated.");
+  saveData(); updateAccountDropdown(); render(); toggleSection('budgetHeaderSection', false);
 };
 
-function exportData() {
-  const dataString = JSON.stringify(appData);
-  const fileName = `budget_backup_${new Date().toISOString().slice(0,10)}.json`;
-  
-  // Use FileReader to create a Base64 string that Android WebView can recognize
-  const blob = new Blob([dataString], {type: "application/json"});
-  const reader = new FileReader();
-  
-  reader.onload = function(e) {
-    const base64Data = e.target.result;
-    const anchor = document.createElement("a");
-    anchor.href = base64Data;
-    anchor.download = fileName;
-    
-    // Append to body to ensure it's "clickable" in some WebViews
-    document.body.appendChild(anchor);
-    anchor.click();
-    document.body.removeChild(anchor);
-  };
-  
-  reader.readAsDataURL(blob);
+function updateChart() {
+  const acc = getActiveAcc();
+  if(!acc) return;
+  const totals = {};
+  let overallPlanned = 0, overallSpent = 0;
+  acc.expenses.forEach(e => {
+    const amt = Number(e.amount);
+    overallPlanned += amt;
+    if(e.done) overallSpent += amt;
+    if (appData.reportMode === 'planned' || (appData.reportMode === 'spent' && e.done)) {
+      totals[e.category] = (totals[e.category] || 0) + amt;
+    }
+  });
+
+  const planTag = document.getElementById("reportOverPlannedTag");
+  const spentTag = document.getElementById("reportOverSpentTag");
+  planTag.style.display = spentTag.style.display = "none";
+
+  if (appData.reportMode === 'planned' && acc.income > 0 && overallPlanned > acc.income) {
+    const diff = overallPlanned - acc.income;
+    planTag.innerText = `OVER PLANNED: ₹${diff} (${((diff/acc.income)*100).toFixed(0)}%)`;
+    planTag.style.display = "inline-block";
+  } else if (appData.reportMode === 'spent' && acc.income > 0 && overallSpent > acc.income) {
+    const diff = overallSpent - acc.income;
+    spentTag.innerText = `OVERSPENT: ₹${diff} (${((diff/acc.income)*100).toFixed(0)}%)`;
+    spentTag.style.display = "inline-block";
+  }
+
+  const chartTotal = appData.reportMode === 'planned' ? overallPlanned : overallSpent;
+  let breakdownHtml = "";
+  const sortedCats = Object.keys(totals).sort((a,b) => totals[b] - totals[a]);
+  sortedCats.forEach(cat => {
+    const pct = chartTotal > 0 ? ((totals[cat]/chartTotal)*100).toFixed(1) : 0;
+    breakdownHtml += `<div class="report-item"><span>${cat}</span><span>₹${totals[cat]} <b>(${pct}%)</b></span></div>`;
+  });
+  document.getElementById('reportBreakdown').innerHTML = breakdownHtml || "<p style='text-align:center; color:#777; font-size:13px;'>No data.</p>";
+
+  if (chartInstance) chartInstance.destroy();
+  const canvas = document.getElementById('spendingChart');
+  if(!canvas) return;
+  chartInstance = new Chart(canvas.getContext('2d'), {
+    type: 'doughnut',
+    data: { 
+      labels: sortedCats, 
+      datasets: [{ data: sortedCats.map(c => totals[c]), backgroundColor: sortedCats.map(c => CATEGORY_COLORS[c]), borderWidth: 1 }] 
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+  });
+}
+
+function exportData() { 
+  const jsonString = JSON.stringify(appData, null, 2);
+  navigator.clipboard.writeText(jsonString).then(() => {
+    showToast("Backup copied! Paste this into a new JSON file to save it.");
+  }).catch(err => {
+    alert("Copy failed. Please try again.");
+  });
 }
 
 function importData(e) {
   const reader = new FileReader();
-  reader.onload = () => { 
-    try { 
-      appData = JSON.parse(reader.result); saveData(); render(); updateAccountDropdown(); 
-      showSysModal("Success", "Data restored.");
-    } catch(err) { showSysModal("Error", "Invalid file format."); } 
-  };
+  reader.onload = () => { try { appData = JSON.parse(reader.result); saveData(); loadData(); render(); } catch(err) { alert("Invalid file"); } };
   reader.readAsText(e.target.files[0]);
 }
 
-checkPinButton();
-populateDropdowns();
-</script>
+(function() {
+  window.history.pushState({ noExit: true }, "");
+  window.addEventListener('popstate', function() {
+    if (confirm("Exit app?")) window.history.back();
+    else window.history.pushState({ noExit: true }, "");
+  });
+})();
 
+checkPinButton();
+loadData();
+</script>
 </body>
 </html>
